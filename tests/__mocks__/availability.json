@@ -1,0 +1,44 @@
+{
+  "availability_calendar": [
+    {
+      "date": "2024-01-15",
+      "slots": [
+        {
+          "time": "18:00",
+          "available": true,
+          "party_size": 2
+        },
+        {
+          "time": "19:00",
+          "available": true,
+          "party_size": 4
+        },
+        {
+          "time": "20:00",
+          "available": false,
+          "party_size": 2
+        }
+      ]
+    },
+    {
+      "date": "2024-01-16",
+      "slots": [
+        {
+          "time": "18:00",
+          "available": false,
+          "party_size": 2
+        },
+        {
+          "time": "19:00",
+          "available": true,
+          "party_size": 2
+        },
+        {
+          "time": "20:00",
+          "available": true,
+          "party_size": 4
+        }
+      ]
+    }
+  ]
+} 

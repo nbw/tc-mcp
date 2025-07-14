@@ -1,0 +1,37 @@
+{
+  "shops": [
+    {
+      "id": "test-restaurant-1",
+      "slug": "test-restaurant-1",
+      "name": "Test Italian Restaurant",
+      "cuisines": ["italian"],
+      "address": "1-1-1 Shibuya, Tokyo",
+      "latitude": 35.6596,
+      "longitude": 139.7006,
+      "budget_dinner_avg_min": 3000,
+      "budget_dinner_avg_max": 8000,
+      "currency": "JPY",
+      "rating": 4.5,
+      "availability_summary": "Available today",
+      "main_image_url": "https://example.com/image1.jpg"
+    },
+    {
+      "id": "test-restaurant-2",
+      "slug": "test-restaurant-2",
+      "name": "Test French Bistro",
+      "cuisines": ["french"],
+      "address": "2-2-2 Ginza, Tokyo",
+      "latitude": 35.6717,
+      "longitude": 139.7653,
+      "budget_dinner_avg_min": 5000,
+      "budget_dinner_avg_max": 12000,
+      "currency": "JPY",
+      "rating": 4.2,
+      "availability_summary": "Contact for availability",
+      "main_image_url": "https://example.com/image2.jpg"
+    }
+  ],
+  "total_count": 2,
+  "page": 1,
+  "per_page": 50
+} 
