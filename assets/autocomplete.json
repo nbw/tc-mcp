@@ -1,0 +1,90 @@
+{
+    "cuisines": [
+        {
+            "text": "Chicken & Poultry",
+            "type": "cuisines",
+            "payload": {
+                "term": "poultry"
+            }
+        },
+        {
+            "text": "Chicken Hot Wings",
+            "type": "cuisines",
+            "payload": {
+                "term": "chicken-wings"
+            }
+        }
+    ],
+    "shops": [
+        {
+            "text": "Chicken, dim sum, and town Chinese food",
+            "type": "shops",
+            "payload": {
+                "shop_slug": "toritensinmachichuka"
+            }
+        },
+        {
+            "text": "Wee Nam Kee Hainanese Chicken Rice",
+            "type": "shops",
+            "payload": {
+                "shop_slug": "weenamkee-tokyo"
+            }
+        },
+        {
+            "text": "Chicken and Teuchi soba Tori Suki Tokyu Plaza Ginza",
+            "type": "shops",
+            "payload": {
+                "shop_slug": "torisuki-tokyuplaza"
+            }
+        },
+        {
+            "text": "Miyazaki Chicken Kuruma Osaka Shinsaibashi",
+            "type": "shops",
+            "payload": {
+                "shop_slug": "kuruma-shinsaibashi"
+            }
+        },
+        {
+            "text": "Miyazaki Chicken Kuruma Osaka Namba Ebisubashi",
+            "type": "shops",
+            "payload": {
+                "shop_slug": "kuruma-ebisubashi"
+            }
+        },
+        {
+            "text": "hot spice MUCHO chicken",
+            "type": "shops",
+            "payload": {
+                "shop_slug": "mucho-chicken"
+            }
+        },
+        {
+            "text": "Chicken Place Rotisseries Higashinihonbashi",
+            "type": "shops",
+            "payload": {
+                "shop_slug": "roti-nihonbashi"
+            }
+        },
+        {
+            "text": "Chicken Place Yanagibashi",
+            "type": "shops",
+            "payload": {
+                "shop_slug": "chikinplace-yanagibashi"
+            }
+        },
+        {
+            "text": "Sumiyaki Chickenkababu",
+            "type": "shops",
+            "payload": {
+                "shop_slug": "chickenkebab"
+            }
+        },
+        {
+            "text": "chicken&tacos Raicho Shrine",
+            "type": "shops",
+            "payload": {
+                "shop_slug": "raicho-shrine"
+            }
+        }
+    ]
+}
