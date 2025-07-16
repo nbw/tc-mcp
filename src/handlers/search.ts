@@ -52,9 +52,7 @@ export async function handleSearchRestaurants(tableCheckService: TableCheckServi
       id: restaurant.id,
       name: restaurant.name,
       cuisine: restaurant.cuisine.join(', '),
-      address: restaurant.location.address,
       price_range: formatPriceRange(restaurant.price_range),
-      rating: restaurant.rating ? `${restaurant.rating}/5` : 'No rating',
       availability: restaurant.availability_summary,
       reservation_url: restaurant.reservation_url,
       image_url: restaurant.image_url,
@@ -133,9 +131,7 @@ function formatSearchResults(results: any[], params: SearchParams): string {
   results.forEach((restaurant, index) => {
     output += `${index + 1}. **${restaurant.name}**\n`;
     output += `   • Cuisine: ${restaurant.cuisine}\n`;
-    output += `   • Address: ${restaurant.address}\n`;
     output += `   • Price Range: ${restaurant.price_range}\n`;
-    output += `   • Rating: ${restaurant.rating}\n`;
     output += `   • Availability: ${restaurant.availability}\n`;
     output += `   • Reservation Link: ${restaurant.reservation_url}\n`;
     

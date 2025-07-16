@@ -1,6 +1,6 @@
 # TableCheck MCP Server
 
-A Model Context Protocol (MCP) server for searching restaurant reservations and guiding users to reservation pages using the TableCheck API. This server is compatible with Claude.ai and other MCP clients.
+A Model Context Protocol (MCP) server for searching restaurant reservations and guiding users to reservation pages using the TableCheck API. This server is compatible with Claude.ai and other MCP clients, and supports both local stdio transport and remote HTTP/SSE transport for cloud deployment.
 
 ## Features
 
@@ -10,6 +10,8 @@ A Model Context Protocol (MCP) server for searching restaurant reservations and 
 - **Reservation Links**: Generate direct reservation links with pre-filled parameters
 - **Location Intelligence**: Smart location resolution for Tokyo area locations
 - **Flexible Search**: Support for both text-based and parameter-based searches
+- **Dual Transport**: Support for both local stdio and remote HTTP/SSE transport
+- **Cloud Ready**: Docker containerization and production deployment support
 
 ## Installation
 
@@ -17,7 +19,7 @@ A Model Context Protocol (MCP) server for searching restaurant reservations and 
 
 - Node.js 18.0.0 or higher
 - npm or yarn
-- [mise](https://mise.jdx.dev/) (recommended for version management)
+- Docker (optional, for containerized deployment)
 
 ### Install Dependencies
 
@@ -25,66 +27,127 @@ A Model Context Protocol (MCP) server for searching restaurant reservations and 
 npm install
 ```
 
-### Install with mise
-
-If you have mise installed:
-
-```bash
-mise use node@18
-npm install
-```
-
-## Configuration
-
-### Environment Variables
-
-Create a `.env` file in the root directory (optional):
-
-```env
-NODE_ENV=development
-DEFAULT_LOCALE=en
-LOG_LEVEL=info
-```
-
-### Configuration Constants
-
-The server uses default configuration values defined in `src/config/constants.ts`:
-
-- **API Base URL**: `https://production.tablecheck.com/v2`
-- **Default Location**: Tokyo Station (35.6762, 139.6503)
-- **Default Locale**: English (`en`)
-- **Default Search Radius**: 5km
-- **Default Results**: 50 per page
-
 ## Usage
 
-### Build and Start
+### Local Development (stdio transport)
+
+For local use with Claude Desktop and other MCP clients:
 
 ```bash
 # Build the project
 npm run build
 
-# Start the server
+# Start the local server (stdio transport)
 npm start
-```
 
-### Development Mode
-
-```bash
-# Run in development mode with auto-reload
+# Or run in development mode
 npm run dev
 ```
 
-### Using with Claude Desktop
+### Remote Server (HTTP/SSE transport)
 
-Add this server to your Claude Desktop configuration:
+For cloud deployment and remote access:
+
+```bash
+# Build the project
+npm run build
+
+# Start the remote server
+npm run start:remote
+
+# Or run in development mode
+npm run dev:remote
+```
+
+The remote server will be available at:
+- **SSE endpoint**: `http://localhost:3000/sse`
+- **Health check**: `http://localhost:3000/health`
+- **Server info**: `http://localhost:3000/info`
+
+### Docker Deployment
+
+#### Build and run with Docker
+
+```bash
+# Build the Docker image
+docker build -t tablecheck-mcp .
+
+# Run the container
+docker run -p 3000:3000 tablecheck-mcp
+```
+
+#### Using Docker Compose
+
+```bash
+# Production deployment
+docker-compose up -d
+
+# Development mode
+docker-compose --profile dev up -d tablecheck-mcp-dev
+```
+
+### Cloud Deployment
+
+#### Deploy to Fly.io
+
+1. **Install Fly CLI**: Follow the [Fly.io documentation](https://fly.io/docs/getting-started/installing-flyctl/)
+
+2. **Initialize Fly app**:
+   ```bash
+   fly launch
+   ```
+
+3. **Deploy**:
+   ```bash
+   fly deploy
+   ```
+
+4. **Set environment variables** (if needed):
+   ```bash
+   fly secrets set NODE_ENV=production
+   ```
+
+Your server will be available at `https://your-app-name.fly.dev/sse`
+
+## Configuration
+
+### Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+NODE_ENV=production
+PORT=3000
+HOST=0.0.0.0
+```
+
+### Claude Desktop Configuration
+
+#### For Local Server (stdio transport)
+
+Add to your Claude Desktop configuration:
 
 ```json
 {
   "mcpServers": {
     "tablecheck": {
       "command": "node",
-      "args": ["path/to/tablecheck-mcp/dist/index.js"]
+      "args": ["/path/to/tablecheck-mcp/dist/index.js"]
+    }
+  }
+}
+```
+
+#### For Remote Server (HTTP/SSE transport)
+
+Use `mcp-remote` to connect to the remote server:
+
+```json
+{
+  "mcpServers": {
+    "tablecheck": {
+      "command": "npx",
+      "args": ["mcp-remote", "https://your-server.com/sse"]
     }
   }
 }
@@ -151,6 +214,14 @@ generate_reservation_link({
   locale?: "en" | "jp"         // Language locale
 })
 ```
+
+## API Endpoints (Remote Mode)
+
+When running in remote mode, the server exposes the following endpoints:
+
+- **`POST /mcp`**: JSON-RPC endpoint for MCP tool calls
+- **`GET /health`**: Health check endpoint
+- **`GET /info`**: Server information endpoint
 
 ## Examples
 
@@ -219,27 +290,20 @@ The server includes smart location resolution for common Tokyo locations:
 
 You can use location names like `"shibuya"`, `"tokyo station"`, or provide exact coordinates.
 
-## Error Handling
-
-The server provides comprehensive error handling:
-
-- **Validation Errors**: Invalid parameters, date formats, etc.
-- **API Errors**: Rate limiting, network issues, invalid requests
-- **Location Errors**: Unknown locations fall back to Tokyo Station
-- **Graceful Degradation**: Partial results when some data is unavailable
-
 ## Development
 
 ### Project Structure
 
 ```
 src/
+├── core/             # Shared server logic
 ├── config/           # Configuration constants
 ├── handlers/         # Request handlers for each tool
 ├── services/         # TableCheck API service
 ├── types/           # TypeScript interfaces
 ├── utils/           # Utility functions
-└── index.ts         # Main server entry point
+├── index.ts         # Main server entry point (stdio transport)
+└── server.ts        # Remote server entry point (HTTP/SSE transport)
 ```
 
 ### Testing
@@ -250,6 +314,10 @@ npm test
 
 # Run linter
 npm run lint
+
+# Test remote server
+curl http://localhost:3000/health
+curl -N -H "Accept: text/event-stream" http://localhost:3000/sse
 ```
 
 ### Building
@@ -262,18 +330,46 @@ npm run build
 npm run clean
 ```
 
-## API Reference
+## Deployment Options
 
-### TableCheck API Endpoints
+### 1. Local Development
+- Use stdio transport for local Claude Desktop integration
+- Run `npm run dev` for development mode
 
-- **Search**: `GET /v2/shop_search` - Parameter-based restaurant search
-- **Autocomplete**: `GET /v2/autocomplete` - Text-based restaurant search
-- **Cuisines**: `GET /v2/cuisines` - List available cuisines
-- **Availability**: `POST /v2/hub/availability_calendar` - Get restaurant availability
+### 2. Remote Server
+- Use HTTP/SSE transport for cloud deployment
+- Deploy as Docker container to any cloud platform
+- Access via `https://your-server.com/sse`
 
-### Rate Limiting
+### 3. Hybrid Approach
+- Run locally for development and testing
+- Deploy to cloud for production use
+- Use `mcp-remote` to connect local clients to remote server
 
-The TableCheck API has rate limiting. The server handles rate limit errors gracefully and provides appropriate error messages.
+## Error Handling
+
+The server provides comprehensive error handling:
+
+- **Validation Errors**: Invalid parameters, date formats, etc.
+- **API Errors**: Rate limiting, network issues, invalid requests
+- **Location Errors**: Unknown locations fall back to Tokyo Station
+- **Graceful Degradation**: Partial results when some data is unavailable
+- **Health Checks**: Built-in health monitoring for production deployments
+
+## Security
+
+- **CORS**: Configurable CORS settings for different environments
+- **Input Validation**: Comprehensive input validation for all endpoints
+- **Rate Limiting**: Protection against abuse (implement as needed)
+- **Environment Variables**: Secure configuration management
+- **Docker Security**: Non-root user in containers
+
+## Monitoring
+
+- **Health Checks**: `/health` endpoint for monitoring
+- **Logging**: Structured logging with different levels
+- **Metrics**: Built-in request/response tracking
+- **Error Tracking**: Comprehensive error logging
 
 ## Troubleshooting
 
@@ -283,10 +379,29 @@ The TableCheck API has rate limiting. The server handles rate limit errors grace
 2. **"Invalid date format"**: Use YYYY-MM-DD format for dates
 3. **"Rate limit exceeded"**: Wait a moment before retrying
 4. **"Location not found"**: Use a supported location name or exact coordinates
+5. **"Connection failed"**: Check network connectivity and server status
+
+### Remote Server Issues
+
+1. **SSE Connection Problems**: Check CORS settings and firewall rules
+2. **Docker Build Failures**: Ensure all dependencies are properly installed
+3. **Port Already in Use**: Change PORT environment variable
+4. **Health Check Failures**: Verify server is responding on `/health`
 
 ### Debugging
 
-Set `LOG_LEVEL=debug` in your environment to see detailed API requests and responses.
+Set appropriate log levels and monitor server logs:
+
+```bash
+# Local debugging
+npm run dev:remote
+
+# Docker logs
+docker-compose logs -f
+
+# Production debugging
+curl https://your-server.com/health
+```
 
 ## Contributing
 
@@ -294,7 +409,8 @@ Set `LOG_LEVEL=debug` in your environment to see detailed API requests and respo
 2. Create a feature branch
 3. Make your changes
 4. Add tests if applicable
-5. Submit a pull request
+5. Test both local and remote modes
+6. Submit a pull request
 
 ## License
 
@@ -305,4 +421,5 @@ MIT License - see LICENSE file for details
 For issues and questions:
 - Check the troubleshooting section
 - Review the API documentation
+- Test with both local and remote modes
 - Open an issue on GitHub 

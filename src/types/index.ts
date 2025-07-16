@@ -23,17 +23,16 @@ export interface RestaurantResult {
   slug: string;
   cuisine: string[];
   location: {
-    address: string;
     lat: number;
     lng: number;
   };
   price_range: {
+    avg?: number;
     min?: number;
     max?: number;
     currency: string;
   };
   availability_summary: string;
-  rating?: number;
   image_url?: string;
   reservation_url: string;
 }
