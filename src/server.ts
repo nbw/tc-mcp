@@ -2,6 +2,7 @@
 
 import { Request, Response } from 'express';
 import express from 'express';
+import morgan from 'morgan';
 import cors from 'cors';
 import compression from 'compression';
 import helmet from 'helmet';
@@ -24,8 +25,7 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const HOST = process.env.HOST || '0.0.0.0';
 
-// Create MCP Server
-const mcpServer = createMcpServer();
+
 
 // Create Web Server
 const app = express();
@@ -43,10 +43,22 @@ app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Add Morgan logging middleware
+if (NODE_ENV === 'development') {
+  // Detailed logging for development
+  app.use(morgan('dev'));
+} else {
+  // Common log format for production
+  app.use(morgan('combined'));
+}
+
 app.post('/mcp', async (req: Request, res: Response) => {
   // In stateless mode, create a new instance of transport and server for each request
   // to ensure complete isolation. A single instance would cause request ID collisions
   // when multiple clients connect concurrently.
+
+  // Create MCP Server
+  const mcpServer = createMcpServer();
 
   try {
     // const server = getServer(); 
@@ -54,7 +66,7 @@ app.post('/mcp', async (req: Request, res: Response) => {
       sessionIdGenerator: undefined,
     });
     res.on('close', () => {
-      console.log('Request closed');
+      console.error('Request closed');
       transport.close();
       mcpServer.close();
     });
