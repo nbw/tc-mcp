@@ -151,6 +151,8 @@ function formatSearchResults(results: any[], params: SearchParams): string {
     if (restaurant.image_url) {
       output += `   • Preview Image Link: ${restaurant.image_url}\n`;
     }
+
+    output += `   • Shop ID (shop_id): ${restaurant.id}\n`;
     
     output += '\n';
   });

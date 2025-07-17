@@ -141,7 +141,7 @@ export class TableCheckService {
             max: shop.budget_dinner_max,
             currency: shop.currency || 'JPY',
           },
-          availability_summary: "",
+          available_dates: [],
           image_url: "",
           reservation_url: buildReservationUrl(slug, params, params.locale),
         };
