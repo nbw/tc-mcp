@@ -61,12 +61,4 @@ export const validateAvailabilityParams = (params: any): void => {
   if (params.num_people < 1 || params.num_people > 20) {
     throw new Error('num_people must be between 1 and 20');
   }
-  if (!isValidISODate(params.start_at)) {
-    throw new Error('Invalid start_at format. Use ISO format (YYYY-MM-DDTHH:MM:SS.sssZ)');
-  }
 };
-
-const isValidISODate = (date: string): boolean => {
-  const isoRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/;
-  return isoRegex.test(date) && !isNaN(Date.parse(date));
-}; 

@@ -1,6 +1,12 @@
 import { TableCheckService } from '../services/tablecheck.js';
 import { AvailabilityParams } from '../types/index.js';
 import { validateAvailabilityParams } from '../utils/validation.js';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone.js';
+import utc from 'dayjs/plugin/utc.js';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 /**
  * Handles restaurant availability requests
@@ -14,6 +20,7 @@ export async function handleGetAvailability(tableCheckService: TableCheckService
     const availabilityParams: AvailabilityParams = {
       shop_id: args.shop_id,
       start_at: args.start_at,
+      timezone: args.timezone,
       num_people: args.num_people,
       locale: args.locale || 'en',
     };
@@ -57,6 +64,8 @@ function formatAvailabilityResults(slots: any[], params: AvailabilityParams): st
   if (slots.length === 0) {
     return `No availability found for restaurant ${params.shop_id} for ${params.num_people} people starting from ${params.start_at}.`;
   }
+
+  const timezone = params.timezone || 'Asia/Tokyo';
   
   let output = `Availability for restaurant ${params.shop_id} (${params.num_people} people):\n\n`;
   
@@ -65,15 +74,15 @@ function formatAvailabilityResults(slots: any[], params: AvailabilityParams): st
   
   Object.keys(slotsByDate).sort().forEach(date => {
     const dateSlots = slotsByDate[date];
-    const availableSlots = dateSlots.filter(slot => slot.available);
+    // const availableSlots = dateSlots.filter(slot => slot.available);
     
-    output += `**${formatDate(date)}**\n`;
+    output += `**${formatDate(date, timezone)}**\n`;
     
-    if (availableSlots.length === 0) {
+    if (dateSlots.length === 0) {
       output += `   No availability\n`;
     } else {
-      availableSlots.forEach(slot => {
-        output += `   • ${slot.time} (${slot.party_size} people)\n`;
+      dateSlots.forEach(slot => {
+        output += `   • ${formatDate(slot.time, timezone)} (${timezone}) (${slot.party_size} people)\n`;
       });
     }
     
@@ -107,15 +116,16 @@ function groupSlotsByDate(slots: any[]): Record<string, any[]> {
  * @param dateString ISO date string
  * @returns Formatted date string
  */
-function formatDate(dateString: string): string {
+function formatDate(dateString: string, timezone: string): string {
   try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    return dayjs(dateString).tz(timezone).format();
+    // const date = new Date(dateString);
+    // return date.toLocaleDateString('en-US', {
+    //   weekday: 'long',
+    //   year: 'numeric',
+    //   month: 'long',
+    //   day: 'numeric'
+    // });
   } catch (error) {
     return dateString;
   }

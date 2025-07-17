@@ -46,6 +46,7 @@ export interface RestaurantResult {
 export interface AvailabilityParams {
   shop_id: string;
   start_at: string;
+  timezone: string;
   num_people: number;
   locale?: 'en' | 'jp';
 }

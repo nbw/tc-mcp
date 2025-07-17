@@ -108,7 +108,11 @@ export const tools = [
         },
         start_at: {
           type: "string",
-          description: "Start date/time for availability check (ISO format: YYYY-MM-DDTHH:MM:SS.sssZ)"
+          description: "Start date/time for availability check in my local timezone (ISO 8601 format: YYYY-MM-DDTHH:MM:SS±HH:MM)"
+        },
+        timezone: {
+          type: "string",
+          description: "The timezone of the reservation (example: Asia/Tokyo, America/Chicago, Europe/London, etc.)"
         },
         num_people: {
           type: "number",
