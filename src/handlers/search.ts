@@ -52,8 +52,10 @@ export async function handleSearchRestaurants(tableCheckService: TableCheckServi
       id: restaurant.id,
       name: restaurant.name,
       cuisine: restaurant.cuisine.join(', '),
-      price_range: formatPriceRange(restaurant.price_range),
-      availability: restaurant.availability_summary,
+      price_avg: formatAvgPrice(restaurant.price_avg, restaurant.currency),
+      lunch_price_range: formatPriceRange(restaurant.lunch_price_range),
+      dinner_price_range: formatPriceRange(restaurant.dinner_price_range),
+      availability: formatAvailability(restaurant.available_dates),
       reservation_url: restaurant.reservation_url,
       image_url: restaurant.image_url,
     }));
@@ -86,10 +88,6 @@ export async function handleSearchRestaurants(tableCheckService: TableCheckServi
  * @returns Formatted price string
  */
 function formatPriceRange(priceRange: any): string {
-  if (!priceRange.min && !priceRange.max) {
-    return 'Price not available';
-  }
-  
   const currency = priceRange.currency || 'JPY';
   const min = priceRange.min ? `${priceRange.min} ${currency}` : '';
   const max = priceRange.max ? `${priceRange.max} ${currency}` : '';
@@ -99,6 +97,19 @@ function formatPriceRange(priceRange: any): string {
   }
   
   return min || max || 'Price not available';
+}
+
+/**
+ * Formats average price for display
+ * @param price Average price
+ * @returns Formatted price string
+ */
+function formatAvgPrice(price: number, currency: string): string {
+  if (price) {
+    return `${price} ${currency}`;
+  } else {
+    return 'Price not available';
+  }
 }
 
 /**
@@ -130,13 +141,15 @@ function formatSearchResults(results: any[], params: SearchParams): string {
   
   results.forEach((restaurant, index) => {
     output += `${index + 1}. **${restaurant.name}**\n`;
-    output += `   • Cuisine: ${restaurant.cuisine}\n`;
-    output += `   • Price Range: ${restaurant.price_range}\n`;
-    output += `   • Availability: ${restaurant.availability}\n`;
+    output += `   • Cuisine(s): ${restaurant.cuisine}\n`;
+    output += `   • Price Average: ${restaurant.price_avg}\n`;
+    output += `   • Lunch Price Range: ${restaurant.lunch_price_range}\n`;
+    output += `   • Dinner Price Range: ${restaurant.dinner_price_range}\n`;
+    output += `   • ${restaurant.availability}\n`;
     output += `   • Reservation Link: ${restaurant.reservation_url}\n`;
     
     if (restaurant.image_url) {
-      output += `   • Image: ${restaurant.image_url}\n`;
+      output += `   • Preview Image Link: ${restaurant.image_url}\n`;
     }
     
     output += '\n';
@@ -144,3 +157,11 @@ function formatSearchResults(results: any[], params: SearchParams): string {
   
   return output;
 } 
+
+function formatAvailability(available_dates: string[]): string {
+  if (available_dates.length === 0) {
+    return 'Contact restaurant for availability'
+  }
+
+  return `Available Dates: ${available_dates.join(', ')}`;
+}

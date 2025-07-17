@@ -46,7 +46,11 @@ export class TableCheckService {
   async searchRestaurants(params: SearchParams): Promise<RestaurantResult[]> {
     try {
       if (params.query) {
-        return await this.textSearch(params);
+        const cuisines = await this.searchCuisines(params.query, params.locale);
+        params.cuisines = cuisines;
+        const paramSearch = await this.parameterSearch(params);
+        const textSearch = await this.textSearch(params);
+        return [...textSearch, ...paramSearch];
       } else {
         return await this.parameterSearch(params);
       }
@@ -115,7 +119,7 @@ export class TableCheckService {
 
     if (response.shops && response.shops.length > 0) {
       response.shops.forEach((shop: any) => {
-        const slug =  shop.payload ? shop.payload.shop_slug : null
+        const slug = shop.payload ? shop.payload.shop_slug : null
         const result: RestaurantResult = {
           id: slug,
           name: shop.text || 'Unknown Restaurant',
@@ -125,10 +129,16 @@ export class TableCheckService {
             lat: shop.geocode ? shop.geocode.lat : null,
             lng: shop.geocode ? shop.geocode.lon : null,
           },
-          price_range: {
-            avg: shop.budget_avg,
-            min: shop.budget_lunch_min || shop.price_range?.min,
-            max: shop.budget_dinner_max || shop.price_range?.max,
+          currency: shop.currency || 'JPY',
+          price_avg: shop.budget_avg,
+          lunch_price_range: {
+            min: shop.budget_lunch_min,
+            max: shop.budget_lunch_max,
+            currency: shop.currency || 'JPY',
+          },
+          dinner_price_range: {
+            min: shop.budget_dinner_min,
+            max: shop.budget_dinner_max,
             currency: shop.currency || 'JPY',
           },
           availability_summary: "",
@@ -162,13 +172,19 @@ export class TableCheckService {
             lat: shop.geocode ? shop.geocode.lat : null,
             lng: shop.geocode ? shop.geocode.lon : null,
           },
-          price_range: {
+          price_avg: shop.budget_avg,
+          currency: shop.currency || 'JPY',
+          lunch_price_range: {
             min: shop.budget_lunch_min,
-            max: shop.budget_dinner_max,
-            avg: shop.budget_avg,
+            max: shop.budget_lunch_min,
             currency: shop.currency || 'JPY',
           },
-          availability_summary: this.formatAvailabilitySummary(shop),
+          dinner_price_range: {
+            min: shop.budget_dinner_min,
+            max: shop.budget_dinner_max,
+            currency: shop.currency || 'JPY',
+          },
+          available_dates: shop.availability,
           image_url: shop.search_image,
           reservation_url: buildReservationUrl(shop.slug || shop.id, params, params.locale),
         };
@@ -177,27 +193,6 @@ export class TableCheckService {
     }
 
     return results;
-  }
-
-  /**
-   * Formats availability information into a readable summary
-   * @param shop Shop data from API
-   * @returns Formatted availability summary
-   */
-  private formatAvailabilitySummary(shop: any): string {
-    if (shop.availability_summary) {
-      return shop.availability_summary;
-    }
-
-    if (shop.availability_status) {
-      return `Availability: ${shop.availability_status}`;
-    }
-
-    if (shop.next_available_date) {
-      return `Next available: ${shop.next_available_date}`;
-    }
-
-    return 'Contact restaurant for availability';
   }
 
   /**
@@ -303,15 +298,38 @@ export class TableCheckService {
     if (response && response["cuisines"] && Array.isArray(response["cuisines"])) {
       response["cuisines"].forEach((cuisine: any) => {
         const cuisine_for_locale = cuisine.text_translations.find((translation: any) => translation.locale === locale)
+        const cuisine_en = cuisine.text_translations.find((translation: any) => translation.locale === 'en')
+        const cuisine_ja = cuisine.text_translations.find((translation: any) => translation.locale === 'ja')
+
         cuisines.push({
           id: cuisine.field,
           name: cuisine_for_locale.translation,
+          name_en: cuisine_en.translation,
+          name_ja: cuisine_ja.translation,
           locale: locale,
         });
       });
     }
 
     return cuisines;
+  }
+
+  async searchCuisines(query: string, locale: string = 'en'): Promise<string[]> {
+    const cuisines = await this.getCuisines(locale);
+
+    const queryLower = query.toLowerCase();
+    const queryDash = query.replace(/ /g, '-');
+
+    const results = cuisines.filter((cuisine: Cuisine) => {
+      return cuisine.id.includes(queryDash) ||
+        cuisine.name.toLowerCase().includes(queryLower) ||
+        cuisine.name_en.toLowerCase().includes(queryLower) ||
+        cuisine.name_ja.toLowerCase().includes(queryLower);
+    });
+
+    return results.map((cuisine: Cuisine) => {
+      return cuisine.id;
+    });
   }
 
   /**

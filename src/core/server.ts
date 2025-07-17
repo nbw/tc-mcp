@@ -218,7 +218,6 @@ export function createMcpServer(): Server {
    */
   server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
     const { name, arguments: args } = request.params;
-    
     try {
       switch (name) {
         case "search_restaurants":

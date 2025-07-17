@@ -26,13 +26,19 @@ export interface RestaurantResult {
     lat: number;
     lng: number;
   };
-  price_range: {
-    avg?: number;
+  currency: string;
+  price_avg: number;
+  lunch_price_range: {
     min?: number;
     max?: number;
     currency: string;
   };
-  availability_summary: string;
+  dinner_price_range: {
+    min?: number;
+    max?: number;
+    currency: string;
+  };
+  available_dates: string[];
   image_url?: string;
   reservation_url: string;
 }
@@ -54,6 +60,8 @@ export interface AvailabilitySlot {
 export interface Cuisine {
   id: string;
   name: string;
+  name_en: string;
+  name_ja: string;
   locale: string;
 }
 
